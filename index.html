@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Countdown Timer</title>
+    <style>
+        body {
+            background-image: url('https://lh3.googleusercontent.com/pw/AP1GczO9AF1E90Epnhq_bEwuDaO7XmC8orFoYZ39s9LQ5G8xEgrU3O4Yt5GftXcY7IJ42dxjNmJfgi-k-CfD2rJJ1WxW64fi-icpwmJ_3TDViltfZAm_maXF0PmHKaZATbjrrQLgDIGVVAIKaTngQ-A73NbyKw=w627-h659-s-no-gm?authuser=0'); /* Replace with the direct link to your Google Photos image */
+            background-repeat: repeat;
+            background-size: contain;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+        .flying-title {
+            font-size: 2em;
+            position: absolute;
+            color: white;
+            animation: sparkle 1s infinite, move 5s infinite;
+        }
+        .flying-image {
+            width: 100px; /* Adjust the size as needed */
+            height: auto;
+            position: absolute;
+            animation: moveImage 10s infinite;
+        }
+        @keyframes sparkle {
+            0% { color: white; }
+            50% { color: yellow; }
+            100% { color: white; }
+        }
+        @keyframes move {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(100px, 200px); }
+            50% { transform: translate(-100px, -200px); }
+            75% { transform: translate(-200px, 100px); }
+            100% { transform: translate(0, 0); }
+        }
+        @keyframes moveImage {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(200px, 300px); }
+            50% { transform: translate(-200px, -300px); }
+            75% { transform: translate(-300px, 200px); }
+            100% { transform: translate(0, 0); }
+        }
+        #timer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #timer-box {
+            font-size: 3em;
+            padding: 20px;
+            border: 5px solid white;
+            animation: flash 1s infinite;
+        }
+        @keyframes flash {
+            0% { background-color: red; border-color: blue; }
+            25% { background-color: green; border-color: yellow; }
+            50% { background-color: blue; border-color: red; }
+            75% { background-color: yellow; border-color: green; }
+            100% { background-color: red; border-color: blue; }
+        }
+    </style>
+    <script>
+        function countdown() {
+            const eventDate = new Date("July 19, 2024 11:15:00 EST").getTime();
+            const now = new Date().getTime();
+            const timeRemaining = eventDate - now;
+
+            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+            document.getElementById("timer").innerHTML =
+                days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+
+            if (timeRemaining < 0) {
+                clearInterval(x);
+                document.getElementById("timer").innerHTML = "EXPIRED";
+            }
+        }
+
+        function createFlyingTitles() {
+            for (let i = 0; i < 10; i++) {
+                const title = document.createElement('div');
+                title.className = 'flying-title';
+                title.innerText = 'Time until Kyle Comes!';
+                title.style.top = Math.random() * window.innerHeight + 'px';
+                title.style.left = Math.random() * window.innerWidth + 'px';
+                document.body.appendChild(title);
+            }
+        }
+
+        function createFlyingImage() {
+            const image = document.createElement('img');
+            image.className = 'flying-image';
+            image.src = 'https://photos.google.com/share/AF1QipOXKD-VJTs4tnOefTQ4JtmRWqmQxXPDLYvthH87Bhd__3cpq38wGe496irQ0ktBAg/photo/AF1QipMbk9flFD2E40ozerj0wLV0eC6ZClq1vcazlDUx?key=M1FIQWhsM3JsM3ZzbHJLSjJ6MHRrNUI0TG41VTZB'; // Replace with the direct link to your Google Photos image
+            image.style.top = Math.random() * window.innerHeight + 'px';
+            image.style.left = Math.random() * window.innerWidth + 'px';
+            document.body.appendChild(image);
+        }
+
+        setInterval(countdown, 1000);
+        window.onload = function() {
+            countdown();
+            createFlyingTitles();
+            createFlyingImage();
+        }
+    </script>
+</head>
+<body>
+    <div id="timer-container">
+        <div id="timer-box">
+            <div id="timer"></div>
+        </div>
+    </div>
+
+
+</body>
+</html>
