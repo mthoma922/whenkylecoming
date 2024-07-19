@@ -11,6 +11,10 @@
             font-family: Arial, sans-serif;
             color: white;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            position: relative;
         }
         .flying-title {
             font-size: 2em;
@@ -43,6 +47,27 @@
             75% { transform: translate(-300px, 200px); }
             100% { transform: translate(0, 0); }
         }
+        @keyframes flash {
+            0% { background-color: red; border-color: blue; }
+            25% { background-color: green; border-color: yellow; }
+            50% { background-color: blue; border-color: red; }
+            75% { background-color: yellow; border-color: green; }
+            100% { background-color: red; border-color: blue; }
+        }
+        @keyframes flyAcross {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(10);
+                opacity: 0;
+            }
+        }
         #timer-container {
             display: flex;
             flex-direction: column;
@@ -56,13 +81,6 @@
             border: 5px solid white;
             animation: flash 1s infinite;
             margin-bottom: 20px;
-        }
-        @keyframes flash {
-            0% { background-color: red; border-color: blue; }
-            25% { background-color: green; border-color: yellow; }
-            50% { background-color: blue; border-color: red; }
-            75% { background-color: yellow; border-color: green; }
-            100% { background-color: red; border-color: blue; }
         }
         #excitement-button {
             font-size: 1.5em;
@@ -83,21 +101,46 @@
             animation: flyAcross 2s linear;
             display: none;
         }
-        @keyframes flyAcross {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
         #youtube-player {
             position: fixed;
             bottom: 10px;
             right: 10px;
             z-index: 1000;
         }
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: yellow;
+            pointer-events: none;
+            animation: explode 1s forwards;
+        }
+        #square {
+            position: absolute;
+            bottom: 50px;
+            left: 50px;
+            width: 50px;
+            height: 50px;
+            background-color: red;
+        }
+        .obstacle {
+            position: absolute;
+            bottom: 50px;
+            width: 50px;
+            height: 50px;
+            background-color: blue;
+            animation: moveObstacle 5s linear infinite;
+        }
+        @keyframes moveObstacle {
+            0% { left: 100%; }
+            100% { left: -50px; }
+        }
     </style>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         function countdown() {
-            const eventDate = new Date("July 19, 2024 1:15:00 EST").getTime();
+            const eventDate = new Date("July 19, 2024 13:15:00 EST").getTime();
             const now = new Date().getTime();
             const timeRemaining = eventDate - now;
 
@@ -109,7 +152,7 @@
             if (timeRemaining < 0) {
                 clearInterval(countdownInterval);
                 document.getElementById("timer").innerHTML =
-                    "WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA";
+                    "WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA WAGGA";
             } else {
                 document.getElementById("timer").innerHTML =
                     days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
@@ -120,7 +163,7 @@
             for (let i = 0; i < 10; i++) {
                 const title = document.createElement('div');
                 title.className = 'flying-title';
-                title.innerText = 'Time until Kyle Comes!';
+                title.innerText = 'WHEN THE FUCK IS KYLE GONNA GET HERE!';
                 title.style.top = Math.random() * window.innerHeight + 'px';
                 title.style.left = Math.random() * window.innerWidth + 'px';
                 document.body.appendChild(title);
@@ -144,31 +187,78 @@
             yipee.style.animation = null;
         }
 
-        function onYouTubeIframeAPIReady() {
-            new YT.Player('youtube-player', {
-                height: '180',
-                width: '320',
-                videoId: '4Y0CFgaNcNQ', // Example: Rick Astley - Never Gonna Give You Up
-                playerVars: {
-                    'autoplay': 1,
-                    'controls': 1,
-                    'mute': 1 // Start muted to comply with autoplay policies
-                },
-                events: {
-                    'onReady': onPlayerReady
-                }
-            });
+        function createExplosion(x, y) {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                particle.style.top = `${y}px`;
+                particle.style.left = `${x}px`;
+                document.body.appendChild(particle);
+
+                // Remove particle after animation
+                particle.addEventListener('animationend', () => {
+                    particle.remove();
+                });
+            }
         }
 
-        function onPlayerReady(event) {
-            event.target.playVideo();
-        }
+        document.addEventListener('click', (event) => {
+            if (event.target.id !== 'excitement-button') {
+                createExplosion(event.clientX, event.clientY);
+                jumpSquare();
+            }
+        });
 
         const countdownInterval = setInterval(countdown, 1000);
+
         window.onload = function() {
             countdown();
             createFlyingTitles();
             createFlyingImage();
+            createObstacle();
+        }
+
+        let square = document.getElementById('square');
+        let isJumping = false;
+        let gravity = 0.9;
+        let jumpHeight = 150;
+        let jumpSpeed = 20;
+        let fallSpeed = 5;
+
+        function jumpSquare() {
+            if (!isJumping) {
+                isJumping = true;
+                let jumpInterval = setInterval(() => {
+                    let bottom = parseInt(window.getComputedStyle(square).getPropertyValue("bottom"));
+                    if (bottom < jumpHeight) {
+                        square.style.bottom = bottom + jumpSpeed + "px";
+                    } else {
+                        clearInterval(jumpInterval);
+                        let fallInterval = setInterval(() => {
+                            let bottom = parseInt(window.getComputedStyle(square).getPropertyValue("bottom"));
+                            if (bottom > 50) {
+                                square.style.bottom = bottom - fallSpeed + "px";
+                            } else {
+                                clearInterval(fallInterval);
+                                isJumping = false;
+                            }
+                        }, 20);
+                    }
+                }, 20);
+            }
+        }
+
+        function createObstacle() {
+            let obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            obstacle.style.left = '100%';
+            document.body.appendChild(obstacle);
+
+            obstacle.addEventListener('animationiteration', () => {
+                obstacle.remove();
+                createObstacle();
+            });
         }
     </script>
 </head>
@@ -184,5 +274,6 @@
 
     <!-- YouTube Player -->
     <div id="youtube-player"></div>
+    <div id="square"></div>
 </body>
 </html>
